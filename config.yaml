@@ -1,0 +1,15 @@
+name: "MyHome MQTT"
+description: "Connect a MyHome gateway to an MQTT broker like Mosquito"
+version: "0.2"
+slug: "myhome_mqtt_bridge"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+environment:
+  CONFIG_FILE: /config/myhome-mqtt.json
+map:
+  - "config:rw"
