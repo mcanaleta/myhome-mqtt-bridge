@@ -1,17 +1,36 @@
 import _ from "lodash";
-import { EntityClass } from "./base";
+import { MqttClient } from "mqtt";
+import { CommandSession } from "../command";
+import { LightMessage, OWNMonitorMessage } from "../monitor";
+import { Entity, EntityClass } from "./base";
 
-export const light: EntityClass = {
-  configPayload: {
-    payload_on: "ON",
-    payload_off: "OFF",
-  },
+export class Light extends EntityClass<LightEntity> {
+  className = "light";
+  subscribeTopicSuffixes = ["set"];
 
-  stateMessage: (state: any) => {
-    return state ? "ON" : "OFF";
-  },
+  public createEntity(config: any): LightEntity {
+    const e = new LightEntity(this);
+    return e;
+  }
+}
 
-  msg2MyHomeCmdArgs: (msg: any) => {
-    return [msg == "ON"];
-  },
-};
+class LightEntity extends Entity {
+  configPayload() {
+    return {
+      command_topic: `${this.mqttPrefix}/set`,
+      state_topic: `${this.mqttPrefix}/state`,
+      config_topic: `${this.mqttPrefix}/config`,
+      payload_on: "ON",
+      payload_off: "OFF",
+    };
+  }
+  async handleMQTTMessage(topicSuffix: string, msg: string) {
+    if (topicSuffix == "set")
+      this.clz.cmd.lightCommand(this.ownId, msg == "ON");
+  }
+
+  async handleOWNMessage(own: OWNMonitorMessage) {
+    if (own instanceof LightMessage)
+      this.clz.mqtt.publish(`${this.mqttPrefix}/state`, own.on ? "ON" : "OFF");
+  }
+}

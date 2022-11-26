@@ -1,4 +1,4 @@
 node_modules
-config/myhome-mqtt.json
+config/myhome-mqtt.yaml
 dist
 ref

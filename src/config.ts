@@ -12,7 +12,8 @@ export type Config = {
 
   // home assistant ID => myhome number , area pl, etc
   entities: {
-    light: Map<number>;
-    cover: Map<number>;
+    light: Map<string>;
+    cover: Map<string>;
+    climate: Map<string>;
   };
 };

@@ -1,4 +1,4 @@
-import net from "node:net";
+import net, { Socket } from "node:net";
 import { authenticationResponse, generateClientNonce } from "./hmac";
 
 export const PKT_ACK = "*#*1##";
@@ -23,13 +23,12 @@ export type ConnectOptions = {
   password: string;
 };
 
-export async function connect(opts: ConnectOptions, startCommand: string) {
+export async function connectAndAuthenticate(
+  opts: ConnectOptions,
+  startCommand: string
+) {
   const { host, port, password } = opts;
   const con = net.connect({ host, port });
-
-  con.on("close", (err) => console.log("closed", err));
-  con.on("end", () => console.log("end"));
-  con.on("error", (err) => console.log("error", err));
 
   await receive(con); // ack
   con.write(startCommand);
@@ -48,5 +47,25 @@ export async function connect(opts: ConnectOptions, startCommand: string) {
   return con;
 }
 
+// Handles disconnects
+export class ConnectionManager {
+  con?: Socket;
+
+  public constructor(
+    public opts: ConnectOptions,
+    public startCommand: string
+  ) {}
+
+  async getSocket() {
+    if (!this.con) {
+      const con = await connectAndAuthenticate(this.opts, this.startCommand);
+      con.on("close", () => {
+        this.con = undefined;
+      });
+      this.con = con;
+    }
+    return this.con!;
+  }
+}
 //connect(host, port, password);
 //testHmac();

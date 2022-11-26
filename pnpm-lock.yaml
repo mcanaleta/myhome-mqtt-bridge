@@ -3,10 +3,12 @@ lockfileVersion: 5.4
 specifiers:
   '@tsconfig/node18': ^1.0.1
   '@types/chai': ^4.3.4
+  '@types/js-yaml': ^4.0.5
   '@types/lodash': ^4.14.190
   '@types/mocha': ^10.0.0
   '@types/node': ^18.11.9
   chai: ^4.3.7
+  js-yaml: ^4.1.0
   lodash: ^4.17.21
   mocha: ^10.1.0
   mqtt: ^4.3.7
@@ -14,12 +16,14 @@ specifiers:
   typescript: ^4.9.3
 
 dependencies:
+  js-yaml: 4.1.0
   lodash: 4.17.21
   mqtt: 4.3.7
 
 devDependencies:
   '@tsconfig/node18': 1.0.1
   '@types/chai': 4.3.4
+  '@types/js-yaml': 4.0.5
   '@types/lodash': 4.14.190
   '@types/mocha': 10.0.0
   '@types/node': 18.11.9
@@ -77,6 +81,10 @@ packages:
     resolution: {integrity: sha512-KnRanxnpfpjUTqTCXslZSEdLfXExwgNxYPdiO2WGUj8+HDjFi8R3k5RVKPeSCzLjCcshCAtVO2QBbVuAV4kTnw==}
     dev: true
 
+  /@types/js-yaml/4.0.5:
+    resolution: {integrity: sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==}
+    dev: true
+
   /@types/lodash/4.14.190:
     resolution: {integrity: sha512-5iJ3FBJBvQHQ8sFhEhJfjUP+G+LalhavTkYyrAYqz5MEJG+erSv0k9KJLb6q7++17Lafk1scaTIFXcMJlwK8Mw==}
     dev: true
@@ -131,7 +139,6 @@ packages:
 
   /argparse/2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
-    dev: true
 
   /assertion-error/1.1.0:
     resolution: {integrity: sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==}
@@ -490,7 +497,6 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
-    dev: true
 
   /leven/2.1.0:
     resolution: {integrity: sha512-nvVPLpIHUxCUoRLrFqTgSxXJ614d8AgQoWl7zPe/2VadE8+1dpU3LBhowRuBAcuwruWtOdD8oYC9jDNJjXDPyA==}

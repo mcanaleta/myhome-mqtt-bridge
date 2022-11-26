@@ -10,6 +10,6 @@ arch:
   - armv7
   - i386
 environment:
-  CONFIG_FILE: /config/myhome-mqtt.json
+  CONFIG_FILE: /config/myhome-mqtt.yaml
 map:
   - "config:rw"
