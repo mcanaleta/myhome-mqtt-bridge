@@ -58,6 +58,16 @@ export class ClimateZoneActuatorMessage extends ClimateMessage {
   }
 }
 
+export class ClimateZoneValveMessage extends ClimateMessage {
+  public constructor(
+    public ownId: string,
+    public cold_valve: string,
+    public heat_valve: string
+  ) {
+    super();
+  }
+}
+
 export class MonitorSession extends EventEmitter implements OWNMonitor {
   public conn: ConnectionManager;
   public constructor(public opts: ConnectOptions) {
@@ -159,6 +169,18 @@ export class MonitorSession extends EventEmitter implements OWNMonitor {
             g.zone,
             g.actuator,
             g.value == "1"
+          );
+        },
+      },
+
+      // *#4*5*19*0*0## ->
+      {
+        expr: /\*#4\*(?<zone>\d+)\*19\*(?<cold_valve>\d+)\*(?<heat_valve>\d+)##/,
+        func: (g: any) => {
+          return new ClimateZoneValveMessage(
+            g.zone,
+            g.cold_valve,
+            g.heat_valve
           );
         },
       },

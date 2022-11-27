@@ -1,11 +1,13 @@
-import _ from "lodash";
+import _, { isUndefined, some, values } from "lodash";
 import { MqttClient } from "mqtt";
 import { CommandSession } from "../command";
 import {
   ClimateMode,
   ClimateTemperatureAcquireMessage,
   ClimateTemperatureAdjustMessage,
+  ClimateZoneActuatorMessage,
   ClimateZoneModeMessage,
+  ClimateZoneValveMessage,
   OWNMonitorMessage,
 } from "../monitor";
 import { Entity, EntityClass } from "./base";
@@ -28,6 +30,9 @@ class ClimateEntity extends Entity {
   targetTemperature?: number;
   currentMode?: ClimateMode;
   targetMode?: ClimateMode;
+  coldValveOn?: boolean;
+  heatValveOn?: boolean;
+  actuatorsStatus: { [v: string]: boolean } = {};
 
   configPayload() {
     return {
@@ -36,7 +41,9 @@ class ClimateEntity extends Entity {
       current_temperature_topic: `${this.mqttPrefix}/current_temperature`,
       mode_command_topic: `${this.mqttPrefix}/mode/set`,
       mode_state_topic: `${this.mqttPrefix}/mode/state`,
+      action_topic: `${this.mqttPrefix}/action`,
       precision: 0.1,
+      temp_step: 0.5,
       modes: ["off", "heat"],
     };
   }
@@ -44,6 +51,8 @@ class ClimateEntity extends Entity {
   async setupMQTT() {
     this.clz.cmd.climateDimensionRequest(this.ownId, "MEASURES_TEMPERATURE");
     this.clz.cmd.climateDimensionRequest(this.ownId, "SET_POINT_TEMPERATURE");
+    this.clz.cmd.climateDimensionRequest(this.ownId, "VALVES_STATUS");
+    this.clz.cmd.climateDimensionRequest(this.ownId, "ACTUATOR_STATUS");
     this.clz.cmd.climateDimensionRequest(
       this.ownId,
       "SET_TEMPERATURE_WITH_OFFSET"
@@ -79,17 +88,42 @@ class ClimateEntity extends Entity {
     console.log("CLIMATE OWN MESSAGE", own);
     const mqtt = this.clz.mqtt;
     const prefix = this.mqttPrefix;
+    const t = this;
+    function updateAction() {
+      if (isUndefined(t.actuatorsStatus) || isUndefined(t.currentMode)) {
+        return;
+      }
+      const actuatorOn = some(values(t.actuatorsStatus));
+      const action =
+        t.currentMode == "off"
+          ? "off"
+          : actuatorOn
+          ? t.currentMode == "heat"
+            ? "heating"
+            : "cooling"
+          : "idle";
+      mqtt.publish(`${prefix}/action`, action.toString());
+    }
+
     //mqtt.publish(`homeassistant/light/${name}/state`, message ? "ON" : "OFF");
     if (own instanceof ClimateZoneModeMessage) {
       this.currentMode = own.mode;
       this.targetMode = this.targetMode || this.currentMode;
       mqtt.publish(`${prefix}/mode/state`, own.mode);
+      updateAction();
     } else if (own instanceof ClimateTemperatureAcquireMessage) {
       this.currentTemperature = own.temperature;
       mqtt.publish(`${prefix}/current_temperature`, own.temperature.toString());
     } else if (own instanceof ClimateTemperatureAdjustMessage) {
       this.targetTemperature = own.temperature;
       mqtt.publish(`${prefix}/temperature/state`, own.temperature.toString());
+    } else if (own instanceof ClimateZoneValveMessage) {
+      this.coldValveOn = own.cold_valve == "1";
+      this.heatValveOn = own.heat_valve == "1";
+      updateAction();
+    } else if (own instanceof ClimateZoneActuatorMessage) {
+      this.actuatorsStatus[own.actuator] = own.on;
+      updateAction();
     }
   }
 }
