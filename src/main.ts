@@ -1,22 +1,15 @@
-import {
-  connectAndAuthenticate,
-  ConnectionManager,
-  PKT_START_COMMAND,
-  PKT_START_MONITOR,
-} from "./connection";
-import mqtt from "mqtt";
-import { MonitorSession, OWNMonitorMessage } from "./monitor";
 import { readFileSync } from "fs";
-import { Config } from "./config";
-import { Light } from "./classes/light";
+import yaml from "js-yaml";
+import _, { Dictionary, forEach } from "lodash";
+import mqtt from "mqtt";
+import { EntityClass } from "./classes/base";
 import { Climate } from "./classes/climate";
 import { Cover } from "./classes/cover";
-import _, { forEach, invert, mapValues } from "lodash";
-import { EntityClass } from "./classes/base";
-import { CommandSession } from "./command";
-import yaml from "js-yaml";
-
-export type ClassName = "light" | "climate" | "cover";
+import { Light } from "./classes/light";
+import { Config } from "./config";
+import { CommandSession } from "./openwebnet/commandsession";
+import { MonitorSession } from "./openwebnet/monitor";
+import { OWNMonitorMessage } from "./openwebnet/types";
 
 async function main() {
   console.log(process.env);
@@ -26,7 +19,7 @@ async function main() {
   const mqtt_client = mqtt.connect(opts.mqtt.url, opts.mqtt.opts);
   const cmd = new CommandSession(opts.myhome);
 
-  const classes: { [className: string]: EntityClass<any> } = {
+  const classes: Dictionary<EntityClass<any>> = {
     light: new Light(cmd, mqtt_client, opts.entities.light),
     climate: new Climate(cmd, mqtt_client, opts.entities.climate),
     cover: new Cover(cmd, mqtt_client, opts.entities.cover),
@@ -38,6 +31,7 @@ async function main() {
     console.log("connected");
     _(classes).forEach((c) => c.setupMqtt());
     mqtt_client.on("message", (topic, buf: Buffer) => {
+      console.log("MQTT RECEIVED", topic, buf.toString("utf-8"));
       const match = /^homeassistant\/([^\/]*)\/(.*)$/.exec(topic);
       if (match) {
         const msg = buf.toString("utf-8");

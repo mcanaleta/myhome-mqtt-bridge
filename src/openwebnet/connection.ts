@@ -46,26 +46,3 @@ export async function connectAndAuthenticate(
   con.write(PKT_ACK);
   return con;
 }
-
-// Handles disconnects
-export class ConnectionManager {
-  con?: Socket;
-
-  public constructor(
-    public opts: ConnectOptions,
-    public startCommand: string
-  ) {}
-
-  async getSocket() {
-    if (!this.con) {
-      const con = await connectAndAuthenticate(this.opts, this.startCommand);
-      con.on("close", () => {
-        this.con = undefined;
-      });
-      this.con = con;
-    }
-    return this.con!;
-  }
-}
-//connect(host, port, password);
-//testHmac();

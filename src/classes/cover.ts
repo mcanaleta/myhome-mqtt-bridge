@@ -1,17 +1,12 @@
-import _ from "lodash";
-import { MqttClient } from "mqtt";
-import { CommandSession } from "../command";
-import { CoverMessage, OWNMonitorMessage } from "../monitor";
+import { CoverMessage } from "../openwebnet/shutter";
+import { OWNMonitorMessage } from "../openwebnet/types";
 import { Entity, EntityClass } from "./base";
+
+export type MQTTCoverSet = "OPEN" | "CLOSE" | "STOP";
+export type MQTTCoverState = "opening" | "closing" | "closed" | "open";
 
 //https://developer.legrand.com/documentation/open-web-net-for-myhome/
 // https://developer.legrand.com/uploads/2019/12/WHO_2.pdf
-
-const MQTT_2_OWN = {
-  OPEN: "UP",
-  CLOSE: "DOWN",
-  STOP: "STOP",
-};
 
 export class Cover extends EntityClass<CoverEntity> {
   className = "cover";
@@ -35,12 +30,14 @@ class CoverEntity extends Entity {
   }
   async handleMQTTMessage(topicSuffix: string, msg: string) {
     if (topicSuffix == "set")
-      this.clz.cmd.shutterCommand(this.ownId, (MQTT_2_OWN as any)[msg]);
+      this.clz.cmd.shutter.shutterCommand(this.ownId, msg as MQTTCoverSet);
     //this.clz.cmd.lightCommand(this.ownId, msg == "ON");
   }
 
   async handleOWNMessage(msg: OWNMonitorMessage) {
-    if (msg instanceof CoverMessage)
-      this.clz.mqtt.publish(`${this.mqttPrefix}/state`, msg.state);
+    if (msg instanceof CoverMessage) {
+      if (msg.state)
+        this.clz.mqtt.publish(`${this.mqttPrefix}/state`, msg.state);
+    }
   }
 }

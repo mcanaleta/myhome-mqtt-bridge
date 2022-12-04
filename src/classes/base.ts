@@ -1,8 +1,8 @@
 import _, { Dictionary, forEach, invert, keyBy, mapValues } from "lodash";
 import { MqttClient } from "mqtt";
-import { CommandSession } from "../command";
-import { OWNMonitorMessage } from "../monitor";
+import { CommandSession } from "../openwebnet/commandsession";
 import { asyncPublish } from "../mqttutils";
+import { OWNMonitorMessage } from "../openwebnet/types";
 
 export abstract class EntityClass<ET extends Entity> {
   abstract className: string;
@@ -26,6 +26,7 @@ export abstract class EntityClass<ET extends Entity> {
         e.ownId = config.where;
         e.title = config.name;
         e.mqttPrefix = `${this.mqttPrefix}/${name}`;
+        e.setup();
         return e;
       })
       .valueOf();
@@ -40,7 +41,7 @@ export abstract class EntityClass<ET extends Entity> {
       const prefix = e.mqttPrefix;
       const extraPayload = e.configPayload();
       const name = e.title;
-      const object_id = name;
+      const object_id = e.name;
       const configMessage = { name, object_id, ...extraPayload };
       this.subscribeTopicSuffixes.forEach((s) => {
         this.mqtt.subscribe(`${prefix}/${s}`);
@@ -77,10 +78,12 @@ export abstract class Entity {
   title!: string;
   name!: string;
   public constructor(public clz: EntityClass<Entity>) {}
-
+  setup() {}
   abstract handleMQTTMessage(topicSuffix: string, msg: string): Promise<void>;
   abstract handleOWNMessage(msg: OWNMonitorMessage): Promise<void>;
   async setupMQTT() {}
 
   abstract configPayload(): any;
 }
+
+export abstract class ClimateEntity extends Entity {}

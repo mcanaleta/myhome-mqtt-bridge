@@ -1,7 +1,5 @@
-import _ from "lodash";
-import { MqttClient } from "mqtt";
-import { CommandSession } from "../command";
-import { LightMessage, OWNMonitorMessage } from "../monitor";
+import { LightMessage } from "../openwebnet/light";
+import { OWNMonitorMessage } from "../openwebnet/types";
 import { Entity, EntityClass } from "./base";
 
 export class Light extends EntityClass<LightEntity> {
@@ -26,7 +24,7 @@ class LightEntity extends Entity {
   }
   async handleMQTTMessage(topicSuffix: string, msg: string) {
     if (topicSuffix == "set")
-      this.clz.cmd.lightCommand(this.ownId, msg == "ON");
+      this.clz.cmd.ligt.lightCommand(this.ownId, msg == "ON");
   }
 
   async handleOWNMessage(own: OWNMonitorMessage) {
