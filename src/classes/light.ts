@@ -13,6 +13,10 @@ export class Light extends EntityClass<LightEntity> {
 }
 
 class LightEntity extends Entity {
+  async setupMQTT() {
+    this.clz.cmd.ligt.lightStatusRequest(this.ownId);
+  }
+
   configPayload() {
     return {
       command_topic: `${this.mqttPrefix}/set`,
@@ -29,6 +33,6 @@ class LightEntity extends Entity {
 
   async handleOWNMessage(own: OWNMonitorMessage) {
     if (own instanceof LightMessage)
-      this.clz.mqtt.publish(`${this.mqttPrefix}/state`, own.on ? "ON" : "OFF");
+      this.mqttPublish("state", own.on ? "ON" : "OFF");
   }
 }

@@ -82,6 +82,11 @@ export abstract class Entity {
   abstract handleMQTTMessage(topicSuffix: string, msg: string): Promise<void>;
   abstract handleOWNMessage(msg: OWNMonitorMessage): Promise<void>;
   async setupMQTT() {}
+  public mqttPublish(topicSuffix: string, message: string) {
+    const topic = `${this.mqttPrefix}/${topicSuffix}`;
+    console.log("publishing to", topic, message);
+    this.clz.mqtt.publish(`${topic}`, message);
+  }
 
   abstract configPayload(): any;
 }

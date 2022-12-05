@@ -36,8 +36,7 @@ class CoverEntity extends Entity {
 
   async handleOWNMessage(msg: OWNMonitorMessage) {
     if (msg instanceof CoverMessage) {
-      if (msg.state)
-        this.clz.mqtt.publish(`${this.mqttPrefix}/state`, msg.state);
+      if (msg.state) this.mqttPublish(`state`, msg.state);
     }
   }
 }

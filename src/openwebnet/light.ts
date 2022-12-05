@@ -1,11 +1,16 @@
 import { CommandSession } from "./commandsession";
 import { ClassName, OWNMonitorMessage } from "./types";
 
+// https://developer.legrand.com/documentation/open-web-net-for-myhome/
+// https://developer.legrand.com/uploads/2019/12/WHO_1.pdf
 export class LightCommandSession {
   public constructor(public session: CommandSession) {}
   async lightCommand(id: string, on: boolean) {
     const what = on ? "1" : "0";
     await this.session.sendMessage(`*1*${what}*${id}##`);
+  }
+  async lightStatusRequest(id: string) {
+    await this.session.sendMessage(`*#1*${id}##`);
   }
 }
 

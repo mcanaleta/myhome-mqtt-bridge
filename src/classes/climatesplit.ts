@@ -62,26 +62,21 @@ export class ClimateSplitEntity extends ClimateEntity {
 
   async handleOWNMessage(own: OWNMonitorMessage) {
     console.log("CLIMATE OWN MESSAGE", own);
-    const mqtt = this.clz.mqtt;
-    const prefix = this.mqttPrefix;
     const t = this;
 
     function updateTargetTemperature(temperature: number) {
       t.targetTemperature = temperature;
-      mqtt.publish(
-        `${prefix}/temperature/state`,
-        t.targetTemperature!.toString()
-      );
+      t.mqttPublish(`temperature/state`, t.targetTemperature!.toString());
     }
 
     function updateTargetMode(mode: MQTTClimateMode) {
       t.targetMode = mode;
-      mqtt.publish(`${prefix}/mode/state`, mode);
+      t.mqttPublish(`mode/state`, mode);
     }
 
     function updateTargetFanMode(mode: MQTTClimateFanMode) {
       t.targetFanMode = mode;
-      mqtt.publish(`${prefix}/fan_mode/state`, mode);
+      t.mqttPublish(`fan_mode/state`, mode);
     }
 
     if (own instanceof ClimateSplitStatusMessage) {
