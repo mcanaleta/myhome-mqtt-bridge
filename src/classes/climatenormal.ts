@@ -16,8 +16,8 @@ const ownMode2MQTT = {} as Dictionary<MQTTClimateMode>;
 export class ClimateNormalEntity extends ClimateEntity {
   currentTemperature?: number;
   targetTemperature?: number;
-  currentMode?: MQTTClimateMode;
-  targetMode?: MQTTClimateMode;
+  mode?: MQTTClimateMode;
+  //targetMode?: MQTTClimateMode;
   coldValveOn?: boolean;
   heatValveOn?: boolean;
   actuatorsStatus: { [v: string]: boolean } = {};
@@ -63,13 +63,13 @@ export class ClimateNormalEntity extends ClimateEntity {
     console.log("CLIMATE MQTT MESSAGE ", topicSuffix, msg);
     if (topicSuffix == "mode/set") {
       const mode = msg as MQTTClimateMode;
-      this.targetMode = mode;
+      this.mode = mode;
       if (mode == "off") this.clz.cmd.climate.climateOff(this.ownId);
       else {
         this.clz.cmd.climate.climateManualTemperatureAndMode(
           this.ownId,
           this.targetTemperature || 20,
-          this.targetMode
+          this.mode
         );
       }
     }
@@ -79,7 +79,7 @@ export class ClimateNormalEntity extends ClimateEntity {
       this.clz.cmd.climate.climateManualTemperatureAndMode(
         this.ownId,
         temp,
-        this.targetMode!
+        this.mode!
       );
       this.mqttPublish(`temperature/state`, temp.toString());
     }
@@ -88,49 +88,52 @@ export class ClimateNormalEntity extends ClimateEntity {
   async handleOWNMessage(own: OWNMonitorMessage) {
     console.log("CLIMATE OWN MESSAGE", own);
     const t = this;
-    function updateAction() {
-      if (isUndefined(t.actuatorsStatus) || isUndefined(t.currentMode)) {
-        return;
-      }
-      const actuatorOn = some(values(t.actuatorsStatus));
-      const action =
-        t.currentMode == "off"
-          ? "off"
-          : actuatorOn
-          ? t.currentMode == "heat"
-            ? "heating"
-            : "cooling"
-          : "idle";
-      t.mqttPublish(`action`, action.toString());
-    }
-
-    function updateTargetTemperature(temperature: number) {
-      t.targetTemperature = temperature;
-      t.mqttPublish(`temperature/state`, t.targetTemperature!.toString());
-    }
-
-    function updateTargetMode(mode: MQTTClimateMode) {
-      t.targetMode = mode;
-      t.mqttPublish(`mode/state`, mode);
-    }
 
     //mqtt.publish(`homeassistant/light/${name}/state`, message ? "ON" : "OFF");
     if (own instanceof ClimateZoneModeMessage) {
-      this.currentMode = own.mode;
-      updateTargetMode((this.targetMode || this.currentMode)!);
-      updateAction();
+      if (!own.mode) {
+        return;
+      }
+      this.mode = own.mode;
+      this.updateTargetMode();
+      this.updateAction();
     } else if (own instanceof ClimateTemperatureAcquireMessage) {
       this.currentTemperature = own.temperature;
       t.mqttPublish(`current_temperature`, own.temperature.toString());
     } else if (own instanceof ClimateTemperatureAdjustMessage) {
-      updateTargetTemperature(own.temperature);
+      this.targetTemperature = own.temperature!;
+      this.updateTargetTemperature();
     } else if (own instanceof ClimateZoneValveMessage) {
       this.coldValveOn = own.cold_valve;
       this.heatValveOn = own.heat_valve;
-      updateAction();
+      this.updateAction();
     } else if (own instanceof ClimateZoneActuatorMessage) {
       this.actuatorsStatus[own.actuator] = own.on;
-      updateAction();
+      this.updateAction();
     }
+  }
+
+  updateTargetTemperature() {
+    this.mqttPublish(`temperature/state`, this.targetTemperature!.toString());
+  }
+
+  updateTargetMode() {
+    return this.mqttPublish(`mode/state`, this.mode!);
+  }
+
+  updateAction() {
+    if (isUndefined(this.actuatorsStatus) || isUndefined(this.mode)) {
+      return;
+    }
+    const actuatorOn = some(values(this.actuatorsStatus));
+    const action =
+      this.mode == "off"
+        ? "off"
+        : actuatorOn
+        ? this.mode == "heat"
+          ? "heating"
+          : "cooling"
+        : "idle";
+    this.mqttPublish(`action`, action.toString());
   }
 }

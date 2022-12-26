@@ -23,7 +23,11 @@ export enum OWNClimateTemperatureSetMode {
 }
 
 const modes: [string, MQTTClimateMode][] = [
+  //  ["4002", "off"],
+  ["102", "off"],
   ["303", "off"],
+  ["107", "heat"],
+  ["108", "heat"],
   ["1", "heat"],
   ["0", "cool"],
 ];
