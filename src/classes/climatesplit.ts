@@ -57,6 +57,12 @@ export class ClimateSplitEntity extends ClimateEntity {
       const temp = parseFloat(msg);
       this.targetTemperature = temp;
       this.climateSplitSetCmd();
+    } else if (topicSuffix == "set") {
+      const j = JSON.parse(msg);
+      this.targetFanMode = j.fan_mode || "medium";
+      this.targetMode = j.mode || "off";
+      this.targetTemperature = j.temperature || 27;
+      this.climateSplitSetCmd();
     }
   }
 
@@ -64,7 +70,8 @@ export class ClimateSplitEntity extends ClimateEntity {
     console.log("CLIMATE OWN MESSAGE", own);
     const t = this;
 
-    function updateTargetTemperature(temperature: number) {
+    function updateTargetTemperature(temperature?: number) {
+      if (!temperature) return;
       t.targetTemperature = temperature;
       t.mqttPublish(`temperature/state`, t.targetTemperature!.toString());
     }
@@ -80,9 +87,7 @@ export class ClimateSplitEntity extends ClimateEntity {
     }
 
     if (own instanceof ClimateSplitStatusMessage) {
-      if (!isUndefined(own.temperature)) {
-        updateTargetTemperature(own.temperature);
-      }
+      updateTargetTemperature(t.targetTemperature || own.temperature);
       if (!isUndefined(own.fanMode)) {
         updateTargetFanMode(own.fanMode);
       }

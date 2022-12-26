@@ -61,6 +61,8 @@ export class ClimateSplitStatusMessage extends ClimateMessage {
   static exprs = [
     // *#4*3#75#8*22*1*0210*2*0##
     /\*#4\*3#(?<zone>\d+)#(?<n>\d)\*22\*(?<mode>\d)\*(?<temp>\d+)\*(?<velocity>\d)\*(?<swing>\d)/,
+    // *#4*3#75#8*22*1**3*0##
+    /\*#4\*3#(?<zone>\d+)#(?<n>\d)\*22\*(?<mode>\d)\*\*(?<velocity>\d)\*(?<swing>\d)/,
     // *#4*3#75#8*22*0***##
     /\*#4\*3#(?<zone>\d+)#(?<n>\d)\*22\*0\*\*\*/,
   ];

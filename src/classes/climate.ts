@@ -8,7 +8,12 @@ import { ClimateSplitEntity } from "./climatesplit";
 export class Climate extends EntityClass<ClimateEntity> {
   className = "climate";
 
-  subscribeTopicSuffixes = ["mode/set", "fan_mode/set", "temperature/set"];
+  subscribeTopicSuffixes = [
+    "mode/set",
+    "fan_mode/set",
+    "temperature/set",
+    "set",
+  ];
 
   public createEntity(config: any): ClimateEntity {
     const e = config.where.match(/^7\d\d$/)
