@@ -33,6 +33,6 @@ class LightEntity extends Entity {
 
   async handleOWNMessage(own: OWNMonitorMessage) {
     if (own instanceof LightMessage)
-      this.mqttPublish("state", own.on ? "ON" : "OFF");
+      this.mqttPublish("state", own.on ? "ON" : "OFF", true);
   }
 }

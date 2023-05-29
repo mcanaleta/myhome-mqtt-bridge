@@ -46,6 +46,10 @@ export abstract class EntityClass<ET extends Entity> {
       this.subscribeTopicSuffixes.forEach((s) => {
         this.mqtt.subscribe(`${prefix}/${s}`);
       });
+      this.subscribeOnceTopicSuffixes.forEach((s) => {
+        this.mqtt.subscribe(`${prefix}/${s}`);
+      });
+      console.log(`publishing MQTT ${JSON.stringify(configMessage, null, 2)}`);
       await asyncPublish(
         this.mqtt,
         `${prefix}/config`,
@@ -57,6 +61,7 @@ export abstract class EntityClass<ET extends Entity> {
   }
 
   abstract subscribeTopicSuffixes: string[];
+  subscribeOnceTopicSuffixes: string[] = [];
 
   handleOWNMessage(msg: OWNMonitorMessage) {
     const entity = this.entitiesByOWNId[msg.ownId];
@@ -68,6 +73,10 @@ export abstract class EntityClass<ET extends Entity> {
     if (match) {
       const [_, name, suffix2] = match;
       this.entities[name].handleMQTTMessage(suffix2, msg);
+      if (this.subscribeOnceTopicSuffixes.includes(suffix2)) {
+        const topic = `${this.mqttPrefix}/${topicSuffix}`;
+        this.mqtt.unsubscribe(topic);
+      }
     }
   }
 }
@@ -82,10 +91,10 @@ export abstract class Entity {
   abstract handleMQTTMessage(topicSuffix: string, msg: string): Promise<void>;
   abstract handleOWNMessage(msg: OWNMonitorMessage): Promise<void>;
   async setupMQTT() {}
-  public mqttPublish(topicSuffix: string, message: string) {
+  public mqttPublish(topicSuffix: string, message: string, retain = false) {
     const topic = `${this.mqttPrefix}/${topicSuffix}`;
     console.log("publishing to", topic, message);
-    this.clz.mqtt.publish(`${topic}`, message);
+    this.clz.mqtt.publish(`${topic}`, message, { retain });
   }
 
   abstract configPayload(): any;

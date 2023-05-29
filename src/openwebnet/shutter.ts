@@ -13,7 +13,7 @@ const table: [MQTTCoverSet, number][] = [
 
 const setMqtt2OWN = fromPairs(table);
 const state2MQTT: (MQTTCoverState | undefined)[] = [
-  undefined,
+  "stopped",
   "opening",
   "closing",
 ];

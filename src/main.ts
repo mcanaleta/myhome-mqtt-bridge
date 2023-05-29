@@ -12,7 +12,6 @@ import { MonitorSession } from "./openwebnet/monitor";
 import { OWNMonitorMessage } from "./openwebnet/types";
 
 async function main() {
-  console.log(process.env);
   const configFile = process.env.CONFIG_FILE || "./config/myhome-mqtt.yaml";
   const opts = yaml.load(readFileSync(configFile).toString("utf-8")) as Config;
   const mon = new MonitorSession(opts.myhome);
@@ -39,6 +38,9 @@ async function main() {
         classes[className]?.handleMQTTMessage(topicSuffix, msg);
       }
     });
+  });
+  mqtt_client.on("error", function (err) {
+    console.log("error", err);
   });
 
   mon.on("message", (msg: OWNMonitorMessage) => {
