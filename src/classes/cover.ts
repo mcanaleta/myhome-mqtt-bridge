@@ -48,7 +48,7 @@ class CoverEntity extends Entity {
       config_topic: `${this.mqttPrefix}/config`,
       position_topic: `${this.mqttPrefix}/position`,
       set_position_topic: `${this.mqttPrefix}/set_position`,
-      // device_class: "shade",
+      device_class: "shutter",
       // set_position_template: "{{ position }}",
       // position_template: "{{ value_json.position }}",
       // position_open: 100,
@@ -152,7 +152,7 @@ class CoverEntity extends Entity {
   }
 
   async handleOWNMessage(msg: OWNMonitorMessage) {
-    const secondsEnlapsed = (Date.now() - this.dirTime) / 1000;
+    const secondsEnlapsed = (Date.now() - this.dirTime) / 500;
     // hack to ignore messages consequence of our action
     if (secondsEnlapsed > 2) {
       console.log(`OWN Cover message ${JSON.stringify(msg)}`);
@@ -161,7 +161,7 @@ class CoverEntity extends Entity {
           this.targetPos;
           this.updateDirection(1);
         } else if (msg.state == "closing") {
-          this.updateDirection(0);
+          this.updateDirection(-1);
         } else {
           this.updateDirection(0);
         }
