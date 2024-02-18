@@ -1,4 +1,4 @@
-import _, { Dictionary, forEach, invert, keyBy, mapValues } from "lodash";
+import { Dictionary, forEach, invert, keyBy, mapValues } from "lodash";
 import { MqttClient } from "mqtt";
 import { CommandSession } from "../openwebnet/commandsession";
 import { asyncPublish } from "../mqttutils";
@@ -19,17 +19,15 @@ export abstract class EntityClass<ET extends Entity> {
 
   public setup() {
     this.mqttPrefix = `homeassistant/${this.className}`;
-    this.entities = _(this.entitiesConfig)
-      .mapValues((config, name) => {
-        const e = this.createEntity(config);
-        e.name = name;
-        e.ownId = config.where;
-        e.title = config.name;
-        e.mqttPrefix = `${this.mqttPrefix}/${name}`;
-        e.setup();
-        return e;
-      })
-      .valueOf();
+    this.entities = mapValues(this.entitiesConfig, (config, name) => {
+      const e = this.createEntity(config);
+      e.name = name;
+      e.ownId = config.where;
+      e.title = config.name;
+      e.mqttPrefix = `${this.mqttPrefix}/${name}`;
+      e.setup();
+      return e;
+    });
 
     this.entitiesByOWNId = keyBy(this.entities, "ownId");
   }
@@ -37,7 +35,7 @@ export abstract class EntityClass<ET extends Entity> {
   abstract createEntity(config: any): ET;
 
   setupMqtt() {
-    _(this.entities).forEach(async (e) => {
+    Object.values(this.entities).forEach(async (e) => {
       const prefix = e.mqttPrefix;
       const extraPayload = e.configPayload();
       const name = e.title;
@@ -49,7 +47,7 @@ export abstract class EntityClass<ET extends Entity> {
       this.subscribeOnceTopicSuffixes.forEach((s) => {
         this.mqtt.subscribe(`${prefix}/${s}`);
       });
-      console.log(`publishing MQTT ${JSON.stringify(configMessage, null, 2)}`);
+      console.log(`[MQTT] publishing config ${JSON.stringify(configMessage)}`);
       await asyncPublish(
         this.mqtt,
         `${prefix}/config`,
@@ -65,7 +63,16 @@ export abstract class EntityClass<ET extends Entity> {
 
   handleOWNMessage(msg: OWNMonitorMessage) {
     const entity = this.entitiesByOWNId[msg.ownId];
-    if (entity) entity.handleOWNMessage(msg);
+    if (entity) {
+      entity.handleOWNMessage(msg);
+    } else {
+      console.log(
+        `[OWN] WARN ${this.className} entity not found for OWN id ${msg.ownId}`
+      );
+      console.log(
+        `[OWN] valid entities: ${Object.keys(this.entities).join(",")}`
+      );
+    }
   }
 
   handleMQTTMessage(topicSuffix: string, msg: string) {
@@ -93,7 +100,7 @@ export abstract class Entity {
   async setupMQTT() {}
   public mqttPublish(topicSuffix: string, message: string, retain = false) {
     const topic = `${this.mqttPrefix}/${topicSuffix}`;
-    console.log("publishing to", topic, message);
+    console.log("[MQTT] publishing message", topic, message);
     this.clz.mqtt.publish(`${topic}`, message, { retain });
   }
 

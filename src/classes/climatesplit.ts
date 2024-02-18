@@ -44,7 +44,7 @@ export class ClimateSplitEntity extends ClimateEntity {
   }
 
   async handleMQTTMessage(topicSuffix: string, msg: string) {
-    console.log("CLIMATE MQTT MESSAGE ", topicSuffix, msg);
+    console.log("[MQTT] climate split message received ", topicSuffix, msg);
     if (topicSuffix == "mode/set") {
       const mode = msg as MQTTClimateMode;
       this.targetMode = mode;
@@ -67,7 +67,7 @@ export class ClimateSplitEntity extends ClimateEntity {
   }
 
   async handleOWNMessage(own: OWNMonitorMessage) {
-    console.log("CLIMATE OWN MESSAGE", own);
+    console.log("[OWN] climate message received ", JSON.stringify(own));
     const t = this;
 
     function updateTargetTemperature(temperature?: number) {

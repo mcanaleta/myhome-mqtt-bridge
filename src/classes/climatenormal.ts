@@ -60,7 +60,7 @@ export class ClimateNormalEntity extends ClimateEntity {
   }
 
   async handleMQTTMessage(topicSuffix: string, msg: string) {
-    console.log("CLIMATE MQTT MESSAGE ", topicSuffix, msg);
+    console.log("[MQTT] climate message received ", topicSuffix, msg);
     if (topicSuffix == "mode/set") {
       const mode = msg as MQTTClimateMode;
       this.mode = mode;
@@ -86,7 +86,7 @@ export class ClimateNormalEntity extends ClimateEntity {
   }
 
   async handleOWNMessage(own: OWNMonitorMessage) {
-    console.log("CLIMATE OWN MESSAGE", own);
+    console.log("[OWN] climate message received", JSON.stringify(own));
     const t = this;
 
     //mqtt.publish(`homeassistant/light/${name}/state`, message ? "ON" : "OFF");

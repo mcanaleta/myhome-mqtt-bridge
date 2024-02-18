@@ -1,0 +1,1 @@
+ssh root@homeassistant.lan ha host logs --identifier addon_local_myhome_mqtt_bridge -n 5000 > ./addon.log

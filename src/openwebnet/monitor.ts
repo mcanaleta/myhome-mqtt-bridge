@@ -1,4 +1,4 @@
-import EventEmitter from "events";
+import EventEmitter = require("events");
 import { handleClimate } from "./climatenormal";
 import { handleClimateSplit } from "./climatesplit";
 import {
@@ -24,7 +24,9 @@ export class MonitorSession extends EventEmitter implements OWNMonitor {
     const con = await connectAndAuthenticate(this.opts, PKT_START_MONITOR);
 
     con.on("close", () => {
-      console.log("monitoring connection closed, reconnecting in 30 secs");
+      console.log(
+        "[OWN] monitoring connection closed, reconnecting in 30 secs"
+      );
       setTimeout(() => {
         this.init();
       }, 30);
@@ -35,7 +37,7 @@ export class MonitorSession extends EventEmitter implements OWNMonitor {
       //console.log("MONITOR RECEIVED PACKET", packet);
       packet.split("##").forEach((s) => {
         if (s == "") return;
-        console.log("MONITOR RECEIVED MSG", s + "##");
+        console.log("[OWN] MONITOR received", s + "##");
         const msg =
           handleLight(s) ||
           handleClimate(s) ||
@@ -43,6 +45,8 @@ export class MonitorSession extends EventEmitter implements OWNMonitor {
           handleCover(s);
         if (msg) {
           this.emit("message", msg);
+        } else {
+          console.log("[OWN] MONITOR unknown msg", s);
         }
       });
     });

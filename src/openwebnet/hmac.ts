@@ -34,7 +34,7 @@ export function hashPassword(
     "736F70653E" +
     "636F70653E" +
     hashHex(password);
-  console.log(msg);
+  // console.log(msg);
   const result = bufToOWInt(Buffer.from(hashHex(msg), "hex"));
   return result;
 }

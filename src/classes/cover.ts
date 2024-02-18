@@ -128,7 +128,7 @@ class CoverEntity extends Entity {
   }
 
   async handleMQTTMessage(topicSuffix: string, msg: string) {
-    console.log(`handleMQTTMessage ${topicSuffix} ${msg}`);
+    console.log(`[MQTT] cover message received ${topicSuffix} ${msg}`);
     if (topicSuffix == "set" || topicSuffix == "set_position") {
       const pos = this.position === undefined ? 50 : this.position;
       const tp = msg == "OPEN" ? 100 : msg == "CLOSE" ? 0 : parseInt(msg);
@@ -155,7 +155,7 @@ class CoverEntity extends Entity {
     const secondsEnlapsed = (Date.now() - this.dirTime) / 500;
     // hack to ignore messages consequence of our action
     if (secondsEnlapsed > 2) {
-      console.log(`OWN Cover message ${JSON.stringify(msg)}`);
+      console.log(`[OWN] cover message received ${JSON.stringify(msg)}`);
       if (msg instanceof CoverMessage && msg.state) {
         if (msg.state == "opening") {
           this.targetPos;

@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
-import yaml from "js-yaml";
-import _, { Dictionary, forEach } from "lodash";
-import mqtt from "mqtt";
+import * as yaml from "js-yaml";
+import { Dictionary, forEach } from "lodash";
+import * as mqtt from "mqtt";
 import { EntityClass } from "./classes/base";
 import { Climate } from "./classes/climate";
 import { Cover } from "./classes/cover";
@@ -27,10 +27,10 @@ async function main() {
   forEach(classes, (c) => c.setup());
 
   mqtt_client.on("connect", function () {
-    console.log("connected");
-    _(classes).forEach((c) => c.setupMqtt());
+    console.log("[MQTT] connected");
+    Object.values(classes).forEach((c) => c.setupMqtt());
     mqtt_client.on("message", (topic, buf: Buffer) => {
-      console.log("MQTT RECEIVED", topic, buf.toString("utf-8"));
+      console.log("[MQTT] RECEIVED", topic, buf.toString("utf-8"));
       const match = /^homeassistant\/([^\/]*)\/(.*)$/.exec(topic);
       if (match) {
         const msg = buf.toString("utf-8");
@@ -40,7 +40,7 @@ async function main() {
     });
   });
   mqtt_client.on("error", function (err) {
-    console.log("error", err);
+    console.log("[MQTT] error", err);
   });
 
   mon.on("message", (msg: OWNMonitorMessage) => {

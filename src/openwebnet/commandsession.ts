@@ -26,25 +26,25 @@ export class CommandSession {
 
   async sendMessage(msg: string) {
     const con = await this.getSocket();
-    console.log("CMD SENDING", msg);
+    console.log("[OWN] sending CMD", msg);
     con.write(msg, (err) => {
-      if (err) console.log("CMD SEND ERROR", err);
+      if (err) console.log("[OWN] sending CMD error", err);
     });
   }
 
   async getSocket() {
     if (!this.con) {
       if (!this.connecting) {
-        console.log("COMMAND SESSION CONNECTING");
+        console.log("[OWN] COMMAND SESSION CONNECTING");
         this.connecting = true;
         const con = await connectAndAuthenticate(this.opts, PKT_START_COMMAND);
         con.on("close", () => {
-          console.log("COMMAND SESSION CLOSED");
+          console.log("[OWN] COMMAND SESSION CLOSED");
           this.con = undefined;
         });
         con.on("data", (data) => {
           const packet = data.toString("utf-8");
-          console.log("COMMAND SESSION RECEIVED MSG", packet);
+          console.log("[OWN] COMMAND SESSION RECEIVED MSG", packet);
         });
         this.con = con;
         this.connecting = false;

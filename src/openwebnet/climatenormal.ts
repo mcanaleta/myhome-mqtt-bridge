@@ -82,7 +82,7 @@ export class ClimateCommandSession {
 
 export class ClimateZoneModeMessage extends ClimateMessage {
   // *4*1*5##
-  static expr = /\*4\*(?<what>\d+)\*(?<zone>\d+)/;
+  static expr = /^\*4\*(?<what>\d+)\*(?<zone>\d+)/;
   public constructor(
     public g: { [key: string]: string },
     public ownId = g.zone,
@@ -94,7 +94,7 @@ export class ClimateZoneModeMessage extends ClimateMessage {
 
 export class ClimateTemperatureAcquireMessage extends ClimateMessage {
   // *#4*9*0*0205##
-  static expr = /\*#4\*(?<zone>\d+)\*0\*(?<temp>\d+)/;
+  static expr = /^\*#4\*(?<zone>\d+)\*0\*(?<temp>\d+)/;
   public constructor(
     public g: { [key: string]: string },
     public ownId = g.zone,
@@ -106,7 +106,7 @@ export class ClimateTemperatureAcquireMessage extends ClimateMessage {
 export class ClimateTemperatureAdjustMessage extends ClimateMessage {
   // *#4*5*12*0215*3##
 
-  static expr = /\*#4\*(?<zone>\d+)\*12\*(?<temp>\d+)\*3/;
+  static expr = /^\*#4\*(?<zone>\d+)\*12\*(?<temp>\d+)\*3/;
   public constructor(
     public g: { [key: string]: string },
     public ownId = g.zone,
@@ -117,7 +117,7 @@ export class ClimateTemperatureAdjustMessage extends ClimateMessage {
 }
 export class ClimateZoneActuatorMessage extends ClimateMessage {
   //*#4*6#1*#20*0## ->
-  static expr = /\*#4\*(?<zone>\d+)#(?<actuator>\d+)\*20\*(?<value>\d+)/;
+  static expr = /^\*#4\*(?<zone>\d+)#(?<actuator>\d+)\*20\*(?<value>\d+)/;
   public constructor(
     public g: { [key: string]: string },
     public ownId = g.zone,
@@ -132,7 +132,7 @@ export class ClimateZoneValveMessage extends ClimateMessage {
   // *#4*5*19*0*0## ->
 
   static expr =
-    /\*#4\*(?<zone>\d+)\*19\*(?<cold_valve>\d+)\*(?<heat_valve>\d+)/;
+    /^\*#4\*(?<zone>\d+)\*19\*(?<cold_valve>\d+)\*(?<heat_valve>\d+)/;
   public constructor(
     public g: { [key: string]: string },
     public ownId = g.zone,
