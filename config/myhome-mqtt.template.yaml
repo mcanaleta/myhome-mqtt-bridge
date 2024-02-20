@@ -1,0 +1,28 @@
+mqtt:
+  url: "mqtt://homeassistant.lan"
+  opts:
+    username: "?"
+    password: "?"
+
+myhome:
+  host: "?"
+  port: 20000
+  password: "?"
+entities:
+  light:
+    id:
+      name: NAME
+      where: "0211"
+
+  climate:
+    test_invitados_p1:
+      cool: false
+      heat: true
+      name: NAME
+      standalone: True
+      where: "4"
+
+  cover:
+    invitados_p1_izquierda:
+      name: NAME
+      where: "1009"

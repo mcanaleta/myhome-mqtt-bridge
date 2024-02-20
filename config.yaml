@@ -1,6 +1,6 @@
 name: "MyHome MQTT"
 description: "Connect a MyHome gateway to an MQTT broker like Mosquito"
-version: "0.4.5"
+version: "0.4.6"
 slug: "myhome_mqtt_bridge"
 init: false
 arch:

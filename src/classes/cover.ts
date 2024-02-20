@@ -138,7 +138,10 @@ class CoverEntity extends Entity {
       this.updateDirection(dir, tp);
     } else if (topicSuffix == "position") {
       if (this.position === undefined) {
-        this.position = parseInt(msg);
+        const parsed = parseInt(msg);
+        if (!isNaN(parsed)) {
+          this.position = parsed;
+        }
       }
     } else if (topicSuffix == "state") {
       if (this.direction === undefined) {
