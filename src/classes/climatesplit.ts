@@ -59,7 +59,7 @@ export class ClimateSplitEntity extends ClimateEntity {
       this.climateSplitSetCmd();
     } else if (topicSuffix == "set") {
       const j = JSON.parse(msg);
-      this.targetFanMode = j.fan_mode || "medium";
+      this.targetFanMode = j.fan_mode || "low";
       this.targetMode = j.mode || "off";
       this.targetTemperature = j.temperature || 27;
       this.climateSplitSetCmd();
