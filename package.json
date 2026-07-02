@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/main.js",
   "scripts": {
+    "listen-bus": "ts-node src/listen-bus.ts",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'src/**/*.test.ts'",
     "test-watch": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -w --watch-files src/** -r  ts-node/register 'src/**/*.test.ts'",
     "tsc": "tsc"

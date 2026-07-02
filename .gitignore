@@ -1,5 +1,6 @@
 node_modules
-config/myhome-mqtt.yaml
 dist
 ref
 *.log
+config/*.yaml
+!config/*.sample.yaml
