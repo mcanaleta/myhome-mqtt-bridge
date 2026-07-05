@@ -25,11 +25,18 @@ export class CommandSession {
   public climateSplit = new ClimateSplitSession(this);
 
   async sendMessage(msg: string) {
-    const con = await this.getSocket();
-    console.log("[OWN] sending CMD", msg);
-    con.write(msg, (err) => {
-      if (err) console.log("[OWN] sending CMD error", err);
-    });
+    try {
+      const con = await this.getSocket();
+      console.log("[OWN] sending CMD", msg);
+      con.write(msg, (err) => {
+        if (err) {
+          console.log("[OWN] sending CMD error", err);
+          this.resetSocket(con);
+        }
+      });
+    } catch (err) {
+      console.log("[OWN] sending CMD failed", err);
+    }
   }
 
   async getSocket() {
@@ -37,29 +44,45 @@ export class CommandSession {
       if (!this.connecting) {
         console.log("[OWN] COMMAND SESSION CONNECTING");
         this.connecting = true;
-        const con = await connectAndAuthenticate(this.opts, PKT_START_COMMAND);
-        con.on("close", () => {
-          console.log("[OWN] COMMAND SESSION CLOSED");
-          this.con = undefined;
-        });
-        con.on("data", (data) => {
-          const packet = data.toString("utf-8");
-          console.log("[OWN] COMMAND SESSION RECEIVED MSG", packet);
-        });
-        this.con = con;
-        this.connecting = false;
+        try {
+          const con = await connectAndAuthenticate(this.opts, PKT_START_COMMAND);
+          con.on("error", (err) => {
+            console.log("[OWN] COMMAND SESSION ERROR", err);
+            this.resetSocket(con);
+          });
+          con.on("close", () => {
+            console.log("[OWN] COMMAND SESSION CLOSED");
+            this.resetSocket(con);
+          });
+          con.on("data", (data) => {
+            const packet = data.toString("utf-8");
+            console.log("[OWN] COMMAND SESSION RECEIVED MSG", packet);
+          });
+          this.con = con;
+        } finally {
+          this.connecting = false;
+        }
       } else {
         let counter = 0;
         while (!this.con) {
           await sleep(100);
           counter++;
           if (counter == 100) {
-            throw "timeout";
+            throw new Error("Timed out waiting for command session connection");
           }
         }
       }
     }
 
     return this.con!;
+  }
+
+  private resetSocket(con: Socket) {
+    if (this.con === con) {
+      this.con = undefined;
+    }
+    if (!con.destroyed) {
+      con.destroy();
+    }
   }
 }

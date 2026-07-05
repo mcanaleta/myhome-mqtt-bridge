@@ -1,4 +1,5 @@
 import EventEmitter = require("events");
+import { Socket } from "net";
 import { handleClimate } from "./climatenormal";
 import { handleClimateSplit } from "./climatesplit";
 import {
@@ -16,20 +17,31 @@ interface OWNMonitor extends EventEmitter {
 }
 
 export class MonitorSession extends EventEmitter implements OWNMonitor {
+  private reconnectTimer?: ReturnType<typeof setTimeout>;
+
   public constructor(public opts: ConnectOptions) {
     super();
     this.init();
   }
   async init() {
-    const con = await connectAndAuthenticate(this.opts, PKT_START_MONITOR);
+    let con: Socket;
+    try {
+      con = await connectAndAuthenticate(this.opts, PKT_START_MONITOR);
+    } catch (err) {
+      console.log("[OWN] monitoring connection failed", err);
+      this.scheduleReconnect();
+      return;
+    }
 
+    con.on("error", (err) => {
+      console.log("[OWN] monitoring connection error", err);
+      con.destroy();
+    });
     con.on("close", () => {
       console.log(
         "[OWN] monitoring connection closed, reconnecting in 30 secs"
       );
-      setTimeout(() => {
-        this.init();
-      }, 30);
+      this.scheduleReconnect();
     });
     con.on("data", (data) => {
       con.write(PKT_ACK);
@@ -50,5 +62,16 @@ export class MonitorSession extends EventEmitter implements OWNMonitor {
         }
       });
     });
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectTimer) {
+      return;
+    }
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = undefined;
+      this.init();
+    }, 30_000);
   }
 }
